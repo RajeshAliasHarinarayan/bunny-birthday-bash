@@ -28,6 +28,7 @@ index.html -> Main HTML file
 - Vanilla JavaScript
 
 ### 💡 Author
-Developed by Hippo 🦛 (yep, that’s me in the game getting whacked!) 
-A personal project created to celebrate a close friendship, blending creativity, emotion, and code.
+Developed by Hippo 🦛 (yep, that’s me in the game getting whacked!). A personal project created to celebrate a close friendship—blending creativity, emotion, and code.
+
+
 
