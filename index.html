@@ -1,42 +1,48 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Bunny Birthday Bash</title>
-    <link rel="stylesheet" href="mole.css">
-    <script src="mole2.js" defer></script>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Bunny Birthday Bash</title>
+  <link rel="stylesheet" href="mole.css" />
+  <script src="mole2.js" defer></script>
 </head>
 
 <body>
-    <!-- <h1>Bunny Birthday Bash</h1> -->
-     <div id="title-banner">
-        <img src="./images/title-image.png" alt="Bunny Birthday Bash" id="title-image">
-    </div>
+  <!-- Splash Screen -->
+  <div id="splash-screen" class="screen splash-screen">
+    <img src="./images/title-image.png" alt="Bunny Birthday Bash" id="splash-title-image" />
+    <button id="open-button">OPEN</button>
+  </div>
 
+  <!-- Main Menu -->
+  <div id="main-menu-screen" class="screen main-menu" style="display:none;">
+    <img src="./images/title-image.png" alt="Bunny Birthday Bash" id="mainmenu-title-image" />
+    <button id="start-button">START GAME</button>
+    <img src="./images/rules-image.png" alt="Game Rules" id="rules-image" />
+  </div>
 
-    <!-- Score and Timer Display -->
-    <h2 id="score-timer">
+  <!-- Game Screen -->
+  <div id="game-container" class="screen game-screen" style="display:none;">
+    <div id="game-header">
+      <img src="./images/title-image.png" alt="Bunny Birthday Bash" id="game-title-image" />
+      <h2 id="score-timer">
         Score: <span id="score">0</span> | Time: <span id="timer">35</span>s
-    </h2>
+      </h2>
+    </div>
 
     <div id="board-container">
-        <div id="board"></div>
+      <div id="board"></div>
 
-        <!-- Full overlay for result image -->
-        <div id="game-result-screen">
-            <img id="result-image" src="" alt="Result">
-        </div>
+      <!-- Full overlay for result image -->
+      <div id="game-result-screen">
+        <img id="result-image" src="" alt="Result" />
+      </div>
     </div>
 
-    <!-- Retry button below the board -->
     <div id="retry-container">
-         <button id="retry-button" style="display: none;">RETRY</button>
+      <button id="retry-button" style="display: none;">RETRY</button>
     </div>
-
-
-
-
-    
+  </div>
 </body>
 </html>
