@@ -9,197 +9,223 @@ let moleInterval;
 let hippoInterval;
 let plantInterval;
 
-let winSound = new Audio('./sounds/win.mp3');
-let loseSound = new Audio('./sounds/gameover.mp3');
-let resultSound; // Track current result sound
+// Audio
+const winSound = new Audio('./sounds/win.mp3');
+const loseSound = new Audio('./sounds/gameover.mp3');
+let resultSound;
 
-let bonkSound = new Audio('./sounds/bonk.mp3');
+const bonkSound = new Audio('./sounds/bonk.mp3');
 
+const mainMenuSong = new Audio('./sounds/mainmenu.mp3');
+mainMenuSong.loop = true;
+
+const inGameSong = new Audio('./sounds/ingame.mp3');
+inGameSong.loop = true;
 
 window.onload = function () {
-    setGame();
+  const splash = document.getElementById("splash-screen");
+  const mainMenu = document.getElementById("main-menu-screen");
+  const gameContainer = document.getElementById("game-container");
 
-    document.getElementById("retry-button").addEventListener("click", function () {
-        resetGame();
+  const openButton = document.getElementById("open-button");
+  const startButton = document.getElementById("start-button");
+  const retryButton = document.getElementById("retry-button");
+
+  openButton?.addEventListener("click", () => {
+    splash.style.display = "none";
+    mainMenu.style.display = "flex";
+
+    mainMenuSong.play().catch(() => {
+      console.warn("User interaction may be required to play audio.");
     });
+  });
+
+  startButton?.addEventListener("click", () => {
+    mainMenu.style.display = "none";
+    gameContainer.style.display = "flex";
+
+    mainMenuSong.pause();
+    mainMenuSong.currentTime = 0;
+
+    inGameSong.currentTime = 0;
+    inGameSong.play();
+
+    initializeGame();
+  });
+
+  retryButton?.addEventListener("click", () => {
+    resetGame();
+  });
 };
 
-function setGame() {
-    // Set up the 3x3 board once
-    for (let i = 0; i < 9; i++) {
-        let tile = document.createElement("div");
-        tile.id = i.toString();
+function initializeGame() {
+  // Clear previous tiles if any
+  document.getElementById("board").innerHTML = "";
 
-        //tile.addEventListener("click", selectTile);
-        // Add both click and touch support
-        tile.addEventListener("click", selectTile);
-        tile.addEventListener("touchstart", selectTile);
-        document.getElementById("board").appendChild(tile);
-    }
+  // Create game board
+  for (let i = 0; i < 9; i++) {
+    let tile = document.createElement("div");
+    tile.id = i.toString();
+    tile.addEventListener("click", selectTile);
+    tile.addEventListener("touchstart", selectTile);
+    document.getElementById("board").appendChild(tile);
+  }
 
-    // Start intervals
-    startGame();
+  startGame();
 }
 
 function startGame() {
-    gameOver = false;
-    timer = 35;
-    score = 0;
+  gameOver = false;
+  score = 0;
+  timer = 30;
 
-    document.getElementById("score").innerText = score.toString();
-    document.getElementById("timer").innerText = timer.toString();
+  document.getElementById("score").innerText = score;
+  document.getElementById("timer").innerText = timer;
 
-    countdownInterval = setInterval(updateTimer, 1000);
-    moleInterval = setInterval(setMole, 1000);
-    hippoInterval = setInterval(setHippo, 1200);
-    plantInterval = setInterval(setPlant, 2000);
+  countdownInterval = setInterval(updateTimer, 1000);
+  moleInterval = setInterval(setMole, 1000);
+  hippoInterval = setInterval(setHippo, 1200);
+  plantInterval = setInterval(setPlant, 1200);
 }
 
 function updateTimer() {
-    if (gameOver) return;
+  if (gameOver) return;
 
-    timer--;
-    document.getElementById("timer").innerText = timer.toString();
+  timer--;
+  document.getElementById("timer").innerText = timer;
 
-    if (timer <= 0) {
-        endGame(false); // time's up, game over
-    }
+  if (timer <= 0) {
+    endGame(false); // Time's up
+  }
 }
 
 function getRandomTile() {
-    return Math.floor(Math.random() * 9).toString();
+  return Math.floor(Math.random() * 9).toString();
 }
 
 function setMole() {
-    if (gameOver) return;
+  if (gameOver) return;
+  if (currMoleTile) currMoleTile.innerHTML = "";
 
-    if (currMoleTile) currMoleTile.innerHTML = "";
+  const mole = document.createElement("img");
+  mole.src = "./images/foxmole.png";
 
-    let mole = document.createElement("img");
-    mole.src = "./images/foxmole.png";
+  const num = getRandomTile();
+  if (isTileOccupied(num)) return;
 
-    let num = getRandomTile();
-    if (isTileOccupied(num)) return;
-
-    currMoleTile = document.getElementById(num);
-    currMoleTile.appendChild(mole);
+  currMoleTile = document.getElementById(num);
+  currMoleTile.appendChild(mole);
 }
 
 function setHippo() {
-    if (gameOver) return;
+  if (gameOver) return;
+  if (currHippoTile) currHippoTile.innerHTML = "";
 
-    if (currHippoTile) currHippoTile.innerHTML = "";
+  const hippo = document.createElement("img");
+  hippo.src = "./images/hippomole.png";
 
-    let hippo = document.createElement("img");
-    hippo.src = "./images/hippomole.png";
+  const num = getRandomTile();
+  if (isTileOccupied(num)) return;
 
-    let num = getRandomTile();
-    if (isTileOccupied(num)) return;
-
-    currHippoTile = document.getElementById(num);
-    currHippoTile.appendChild(hippo);
+  currHippoTile = document.getElementById(num);
+  currHippoTile.appendChild(hippo);
 }
 
 function setPlant() {
-    if (gameOver) return;
+  if (gameOver) return;
+  if (currPlantTile) currPlantTile.innerHTML = "";
 
-    if (currPlantTile) currPlantTile.innerHTML = "";
+  const plant = document.createElement("img");
+  plant.src = "./images/leobishtmole.png";
 
-    let plant = document.createElement("img");
-    plant.src = "./images/leobishtmole.png";
+  const num = getRandomTile();
+  if (isTileOccupied(num)) return;
 
-    let num = getRandomTile();
-    if (isTileOccupied(num)) return;
-
-    currPlantTile = document.getElementById(num);
-    currPlantTile.appendChild(plant);
+  currPlantTile = document.getElementById(num);
+  currPlantTile.appendChild(plant);
 }
 
 function isTileOccupied(id) {
-    return (
-        (currPlantTile && currPlantTile.id === id) ||
-        (currMoleTile && currMoleTile.id === id) ||
-        (currHippoTile && currHippoTile.id === id)
-    );
+  return (
+    (currPlantTile && currPlantTile.id === id) ||
+    (currMoleTile && currMoleTile.id === id) ||
+    (currHippoTile && currHippoTile.id === id)
+  );
 }
 
 function selectTile() {
-    if (gameOver) return;
+  if (gameOver) return;
 
-    if (this === currMoleTile || this === currHippoTile) {
-        // Play bonk sound on hit
-        bonkSound.currentTime = 0;
-        bonkSound.play();
-        score += 10;
-        document.getElementById("score").innerText = score.toString();
+  if (this === currMoleTile || this === currHippoTile) {
+    bonkSound.currentTime = 0;
+    bonkSound.play();
 
-        if (score >= 120) {
-            endGame(true); // game won
-        }
-    } else if (this === currPlantTile) {
-        endGame(false); // hit plant, game over
+    score += 10;
+    document.getElementById("score").innerText = score;
+
+    if (score >= 120) {
+      endGame(true); // win
     }
+  } else if (this === currPlantTile) {
+    endGame(false); // hit trap
+  }
 }
-
-
 
 function endGame(won) {
-    gameOver = true;
+  gameOver = true;
 
-    clearInterval(countdownInterval);
-    clearInterval(moleInterval);
-    clearInterval(hippoInterval);
-    clearInterval(plantInterval);
+  clearInterval(countdownInterval);
+  clearInterval(moleInterval);
+  clearInterval(hippoInterval);
+  clearInterval(plantInterval);
 
-    // Clear all tiles
-    for (let i = 0; i < 9; i++) {
-        document.getElementById(i.toString()).innerHTML = "";
-        document.getElementById(i.toString()).style.backgroundImage = "none";
-    }
+  inGameSong.pause();
+  inGameSong.currentTime = 0;
 
-    // Show result overlay with gamewon/gameover image
-    const resultImage = document.getElementById("result-image");
-    resultImage.src = won ? "./images/gamewon.png" : "./images/gameover.png";
-    document.getElementById("game-result-screen").style.display = "block";
+  for (let i = 0; i < 9; i++) {
+    document.getElementById(i.toString()).innerHTML = "";
+    document.getElementById(i.toString()).style.backgroundImage = "none";
+  }
 
-    // Play result sound
-    resultSound = won ? winSound : loseSound;
-    resultSound.currentTime = 0;
-    resultSound.play();
+  const resultImage = document.getElementById("result-image");
+  resultImage.src = won ? "./images/gamewon.png" : "./images/gameover.png";
+  document.getElementById("game-result-screen").style.display = "block";
 
-    // Show retry button
-    document.getElementById("retry-button").style.display = "block";
+  resultSound = won ? winSound : loseSound;
+  resultSound.currentTime = 0;
+  resultSound.play();
+
+  document.getElementById("retry-button").style.display = "block";
 }
 
-
 function resetGame() {
+  if (resultSound && !resultSound.paused) {
+    resultSound.pause();
+    resultSound.currentTime = 0;
+  }
 
-    // Stop result sound if still playing
-    if (resultSound && !resultSound.paused) {
-        resultSound.pause();
-        resultSound.currentTime = 0;
-    }
+  gameOver = false;
+  score = 0;
+  timer = 30;
 
-    gameOver = false;
-    score = 0;
-    timer = 35;
+  document.getElementById("score").innerText = "0";
+  document.getElementById("timer").innerText = "30";
 
-    document.getElementById("score").innerText = "0";
-    document.getElementById("timer").innerText = "60";
+  for (let i = 0; i < 9; i++) {
+    const tile = document.getElementById(i.toString());
+    tile.innerHTML = "";
+    tile.style.backgroundImage = 'url("./images/pipe.png")';
+  }
 
-    for (let i = 0; i < 9; i++) {
-        const tile = document.getElementById(i.toString());
-        tile.innerHTML = "";
-        tile.style.backgroundImage = 'url("./images/pipe.png")';
-    }
+  currMoleTile = null;
+  currHippoTile = null;
+  currPlantTile = null;
 
-    currMoleTile = null;
-    currHippoTile = null;
-    currPlantTile = null;
+  document.getElementById("game-result-screen").style.display = "none";
+  document.getElementById("retry-button").style.display = "none";
 
-    // Hide result overlay and retry button
-    document.getElementById("game-result-screen").style.display = "none";
-    document.getElementById("retry-button").style.display = "none";
+  inGameSong.currentTime = 0;
+  inGameSong.play();
 
-    startGame();
+  startGame();
 }
