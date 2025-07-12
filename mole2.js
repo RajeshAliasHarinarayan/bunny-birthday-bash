@@ -22,6 +22,9 @@ mainMenuSong.loop = true;
 const inGameSong = new Audio('./sounds/ingame.mp3');
 inGameSong.loop = true;
 
+// For debouncing click/touch events
+let lastTouchTime = 0;
+
 window.onload = function () {
   const splash = document.getElementById("splash-screen");
   const mainMenu = document.getElementById("main-menu-screen");
@@ -66,12 +69,28 @@ function initializeGame() {
   for (let i = 0; i < 9; i++) {
     let tile = document.createElement("div");
     tile.id = i.toString();
-    tile.addEventListener("click", selectTile);
-    tile.addEventListener("touchstart", selectTile);
+
+    // ✅ Use debounced event handler
+    tile.addEventListener("click", handleTileSelect);
+    tile.addEventListener("touchstart", handleTileSelect, { passive: true });
+
     document.getElementById("board").appendChild(tile);
   }
 
   startGame();
+}
+
+function handleTileSelect(event) {
+  const now = Date.now();
+
+  // ✅ Prevent duplicate score on mobile (touch triggers before click)
+  if (event.type === "touchstart") {
+    lastTouchTime = now;
+  } else if (event.type === "click" && now - lastTouchTime < 500) {
+    return; // Skip if touch happened just before
+  }
+
+  selectTile.call(this);
 }
 
 function startGame() {
