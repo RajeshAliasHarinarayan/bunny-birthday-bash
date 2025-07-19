@@ -36,6 +36,15 @@ html, body {
   margin-bottom: 20px;
 }
 
+#splash-footer {
+  margin-top: 20px;
+  font-size: 14px;
+  color: rgba(255, 215, 0, 0.8); /* slightly faded gold */
+  font-family: 'Courier New', Courier, monospace;
+  text-shadow: 1px 1px 2px black;
+  user-select: none;
+}
+
 #open-button {
   background-color: gold;
   color: black;
@@ -102,6 +111,17 @@ html, body {
   font-weight: bold;
   text-shadow: 1px 1px 3px black;
   text-align: center;
+}
+
+/* Add to mole.css or your main CSS file */
+.blinking {
+  animation: blink 1s infinite;
+}
+
+@keyframes blink {
+  0%   { opacity: 1; }
+  50%  { opacity: 0.3; }
+  100% { opacity: 1; }
 }
 
 /* Board Container */
