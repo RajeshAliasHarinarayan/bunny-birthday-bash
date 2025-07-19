@@ -1,17 +1,18 @@
 let currMoleTile;
-let currHippoTile;
-let currPlantTile;
+let currTrapTile1;
+let currTrapTile2;
 let score = 0;
 let gameOver = false;
-let timer = 35;
+let timer = 30;
 let countdownInterval;
 let moleInterval;
-let hippoInterval;
 let plantInterval;
+let trap2Interval;
 
 // Audio
 const winSound = new Audio('./sounds/win.mp3');
 const loseSound = new Audio('./sounds/gameover.mp3');
+const timeupSound = new Audio('./sounds/timeup.mp3');
 let resultSound;
 
 const bonkSound = new Audio('./sounds/bonk.mp3');
@@ -22,7 +23,6 @@ mainMenuSong.loop = true;
 const inGameSong = new Audio('./sounds/ingame.mp3');
 inGameSong.loop = true;
 
-// For debouncing click/touch events
 let lastTouchTime = 0;
 
 window.onload = function () {
@@ -51,6 +51,7 @@ window.onload = function () {
     mainMenuSong.currentTime = 0;
 
     inGameSong.currentTime = 0;
+    inGameSong.playbackRate = 1.0; // reset speed
     inGameSong.play();
 
     initializeGame();
@@ -62,18 +63,13 @@ window.onload = function () {
 };
 
 function initializeGame() {
-  // Clear previous tiles if any
   document.getElementById("board").innerHTML = "";
 
-  // Create game board
   for (let i = 0; i < 9; i++) {
     let tile = document.createElement("div");
     tile.id = i.toString();
-
-    // ✅ Use debounced event handler
     tile.addEventListener("click", handleTileSelect);
     tile.addEventListener("touchstart", handleTileSelect, { passive: true });
-
     document.getElementById("board").appendChild(tile);
   }
 
@@ -82,14 +78,11 @@ function initializeGame() {
 
 function handleTileSelect(event) {
   const now = Date.now();
-
-  // ✅ Prevent duplicate score on mobile (touch triggers before click)
   if (event.type === "touchstart") {
     lastTouchTime = now;
   } else if (event.type === "click" && now - lastTouchTime < 500) {
-    return; // Skip if touch happened just before
+    return;
   }
-
   selectTile.call(this);
 }
 
@@ -100,21 +93,28 @@ function startGame() {
 
   document.getElementById("score").innerText = score;
   document.getElementById("timer").innerText = timer;
+  document.getElementById("timer").style.color = "white";
 
   countdownInterval = setInterval(updateTimer, 1000);
-  moleInterval = setInterval(setMole, 1000);
-  hippoInterval = setInterval(setHippo, 1200);
-  plantInterval = setInterval(setPlant, 1200);
+  moleInterval = setInterval(setRandomScoringCharacter, 1000);
+  plantInterval = setInterval(setPlant, 1100);
+  trap2Interval = setInterval(setTrap2, 1300);
 }
 
 function updateTimer() {
   if (gameOver) return;
-
   timer--;
-  document.getElementById("timer").innerText = timer;
+
+  const timerElement = document.getElementById("timer");
+  timerElement.innerText = timer;
+
+  if (timer === 15) {
+    timerElement.style.color = "#ff4040";
+    inGameSong.playbackRate = 1.3; // increase urgency
+  }
 
   if (timer <= 0) {
-    endGame(false); // Time's up
+    endGame(false, true); // time-up scenario
   }
 }
 
@@ -122,37 +122,31 @@ function getRandomTile() {
   return Math.floor(Math.random() * 9).toString();
 }
 
-function setMole() {
+function isTileOccupied(id) {
+  return (
+    (currMoleTile && currMoleTile.id === id) ||
+    (currTrapTile1 && currTrapTile1.id === id) ||
+    (currTrapTile2 && currTrapTile2.id === id)
+  );
+}
+
+function setRandomScoringCharacter() {
   if (gameOver) return;
   if (currMoleTile) currMoleTile.innerHTML = "";
 
-  const mole = document.createElement("img");
-  mole.src = "./images/foxmole.png";
+  const img = document.createElement("img");
+  img.src = Math.random() < 0.5 ? "./images/foxmole.png" : "./images/hippomole.png";
 
   const num = getRandomTile();
   if (isTileOccupied(num)) return;
 
   currMoleTile = document.getElementById(num);
-  currMoleTile.appendChild(mole);
-}
-
-function setHippo() {
-  if (gameOver) return;
-  if (currHippoTile) currHippoTile.innerHTML = "";
-
-  const hippo = document.createElement("img");
-  hippo.src = "./images/hippomole.png";
-
-  const num = getRandomTile();
-  if (isTileOccupied(num)) return;
-
-  currHippoTile = document.getElementById(num);
-  currHippoTile.appendChild(hippo);
+  currMoleTile.appendChild(img);
 }
 
 function setPlant() {
   if (gameOver) return;
-  if (currPlantTile) currPlantTile.innerHTML = "";
+  if (currTrapTile1) currTrapTile1.innerHTML = "";
 
   const plant = document.createElement("img");
   plant.src = "./images/leobishtmole.png";
@@ -160,46 +154,52 @@ function setPlant() {
   const num = getRandomTile();
   if (isTileOccupied(num)) return;
 
-  currPlantTile = document.getElementById(num);
-  currPlantTile.appendChild(plant);
+  currTrapTile1 = document.getElementById(num);
+  currTrapTile1.appendChild(plant);
 }
 
-function isTileOccupied(id) {
-  return (
-    (currPlantTile && currPlantTile.id === id) ||
-    (currMoleTile && currMoleTile.id === id) ||
-    (currHippoTile && currHippoTile.id === id)
-  );
+function setTrap2() {
+  if (gameOver) return;
+  if (currTrapTile2) currTrapTile2.innerHTML = "";
+
+  const trap = document.createElement("img");
+  trap.src = "./images/tiffymole2.png";
+
+  const num = getRandomTile();
+  if (isTileOccupied(num)) return;
+
+  currTrapTile2 = document.getElementById(num);
+  currTrapTile2.appendChild(trap);
 }
 
 function selectTile() {
   if (gameOver) return;
 
-  if (this === currMoleTile || this === currHippoTile) {
+  if (this === currMoleTile) {
     bonkSound.currentTime = 0;
     bonkSound.play();
-
     score += 10;
     document.getElementById("score").innerText = score;
 
-    if (score >= 120) {
-      endGame(true); // win
+    if (score >= 160) {
+      endGame(true);
     }
-  } else if (this === currPlantTile) {
-    endGame(false); // hit trap
+  } else if (this === currTrapTile1 || this === currTrapTile2) {
+    endGame(false, false);
   }
 }
 
-function endGame(won) {
+function endGame(won, isTimeUp = false) {
   gameOver = true;
 
   clearInterval(countdownInterval);
   clearInterval(moleInterval);
-  clearInterval(hippoInterval);
   clearInterval(plantInterval);
+  clearInterval(trap2Interval);
 
   inGameSong.pause();
   inGameSong.currentTime = 0;
+  inGameSong.playbackRate = 1.0;
 
   for (let i = 0; i < 9; i++) {
     document.getElementById(i.toString()).innerHTML = "";
@@ -207,13 +207,20 @@ function endGame(won) {
   }
 
   const resultImage = document.getElementById("result-image");
-  resultImage.src = won ? "./images/gamewon.png" : "./images/gameover.png";
-  document.getElementById("game-result-screen").style.display = "block";
+  if (won) {
+    resultImage.src = "./images/gamewon.png";
+    resultSound = winSound;
+  } else if (isTimeUp) {
+    resultImage.src = "./images/timeup.png";
+    resultSound = timeupSound;
+  } else {
+    resultImage.src = "./images/gameover.png";
+    resultSound = loseSound;
+  }
 
-  resultSound = won ? winSound : loseSound;
+  document.getElementById("game-result-screen").style.display = "block";
   resultSound.currentTime = 0;
   resultSound.play();
-
   document.getElementById("retry-button").style.display = "block";
 }
 
@@ -229,6 +236,7 @@ function resetGame() {
 
   document.getElementById("score").innerText = "0";
   document.getElementById("timer").innerText = "30";
+  document.getElementById("timer").style.color = "white";
 
   for (let i = 0; i < 9; i++) {
     const tile = document.getElementById(i.toString());
@@ -237,13 +245,14 @@ function resetGame() {
   }
 
   currMoleTile = null;
-  currHippoTile = null;
-  currPlantTile = null;
+  currTrapTile1 = null;
+  currTrapTile2 = null;
 
   document.getElementById("game-result-screen").style.display = "none";
   document.getElementById("retry-button").style.display = "none";
 
   inGameSong.currentTime = 0;
+  inGameSong.playbackRate = 1.0;
   inGameSong.play();
 
   startGame();
