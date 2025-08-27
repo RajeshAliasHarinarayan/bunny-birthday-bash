@@ -30,5 +30,9 @@ index.html -> Main HTML file
 ### 💡 Author
 Developed by Hippo 🦛 (yep, that’s me in the game getting whacked!). A personal project created to celebrate a close friendship—blending creativity, emotion, and code.
 
+### 🎮 Game Link
+https://rajeshaliasharinarayan.github.io/bunny-birthday-bash/
+
+
 
 
